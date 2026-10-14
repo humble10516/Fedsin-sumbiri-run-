@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fedsin Sumbiri Run</title>
+<style>
+body{margin:0;text-align:center;background:#153d22;color:white;font-family:Arial}
+h1{color:#ffe66d}
+canvas{background:linear-gradient(#75c9ef,#c9ed83);width:95%;max-width:400px;border:3px solid white}
+button{padding:13px;margin:8px;border:0;border-radius:10px;background:#ffdf45;font-size:18px}
+</style>
+</head>
+<body>
+<h1>🌴 Fedsin Sumbiri Run</h1>
+<p>Coins: <span id="coins">0</span> | Score: <span id="score">0</span></p>
+<canvas id="game" width="360" height="480"></canvas>
+<br>
+<button onclick="jump()">JUMP</button>
+<button onclick="start()">START / RESTART</button>
+<p>Jump over obstacles and collect coins!</p>
+<script>
+const c=document.getElementById('game'),x=c.getContext('2d');
+let player={x:65,y:390,w:30,h:40,vy:0};
+let obstacles=[],coins=[],score=0,money=0,running=false,over=false,frame=0;
+function start(){player.y=390;player.vy=0;obstacles=[];coins=[];score=0;frame=0;over=false;running=true;loop()}
+function jump(){if(!running){if(over)return;start()}if(player.y>=389)player.vy=-12}
+document.addEventListener('keydown',e=>{if(e.code==='Space')jump()});
+c.addEventListener('touchstart',e=>{e.preventDefault();jump()},{passive:false});
+function loop(){
+if(!running)return;
+frame++;x.clearRect(0,0,360,480);
+x.fillStyle='#23783b';x.fillRect(0,430,360,50);
+player.vy+=0.6;player.y+=player.vy;if(player.y>390){player.y=390;player.vy=0}
+if(frame%65===0)obstacles.push({x:360,y:395,w:25,h:35});
+if(frame%90===0)coins.push({x:360,y:350,r:10});
+obstacles.forEach(o=>o.x-=4);coins.forEach(o=>o.x-=4);
+x.fillStyle='#854b20';x.fillRect(player.x,player.y,player.w,player.h);
+x.fillStyle='#ffdf45';coins.forEach(o=>{x.beginPath();x.arc(o.x,o.y,o.r,0,7);x.fill()});
+coins=coins.filter(o=>{if(Math.abs(o.x-player.x-15)<20&&Math.abs(o.y-player.y-20)<25){money++;document.getElementById('coins').textContent=money;return false}return o.x>-20});
+x.fillStyle='#654321';obstacles.forEach(o=>x.fillRect(o.x,o.y,o.w,o.h));
+if(obstacles.some(o=>player.x<o.x+o.w&&player.x+player.w>o.x&&player.y<o.y+o.h&&player.y+player.h>o.y)){running=false;over=true;x.fillStyle='red';x.font='30px Arial';x.fillText('GAME OVER',80,220);return}
+obstacles=obstacles.filter(o=>o.x>-40);score++;document.getElementById('score').textContent=Math.floor(score/5);
+x.fillStyle='white';x.font='16px Arial';x.fillText('Level '+(1+Math.floor(score/500)),10,25);
+requestAnimationFrame(loop)
+}
+x.fillStyle='white';x.font='18px Arial';x.fillText('Press START to play!',75,220);
+</script>
+</body>
+</html>
